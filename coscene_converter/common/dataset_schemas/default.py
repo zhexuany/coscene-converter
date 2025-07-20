@@ -61,6 +61,19 @@ class DefaultSchema(DatasetSchema):
                 print(f"  Action rotation delta: {action['rotation_delta']}")
             if "world_vector" in action:
                 print(f"  Action world vector: {action['world_vector']}")
+    
+    def process_step(self, step: Dict[str, Any], channels: Dict[str, Channel], verbose: bool = False) -> None:
+        """Process data for a single step"""
+        # Print step information if verbose mode is enabled
+        if verbose:
+            self.print_step_info(step, 0)  # Step index not available here, using 0
+            
+        # Check if observation exists in step
+        if "observation" not in step:
+            print(f"Warning: 'observation' key not found in step")
+            return
+        
+        obs = step["observation"]
         
         # Process natural language instruction
         if "natural_language_instruction" in obs and "language_instruction" in channels:
@@ -145,20 +158,3 @@ class DefaultSchema(DatasetSchema):
                     channels["joint_state"].log(joint_state_msg)
             except Exception as e:
                 print(f"Error processing robot state: {e}")
-    
-    def process_step(self, step: Dict[str, Any], channels: Dict[str, Channel], verbose: bool = False) -> None:
-        """Process data for a single step"""
-        if verbose:
-            self.print_step_info(step, 0)  # 步骤索引在这里不可用，使用0
-            
-        if "observation" not in step:
-            print(f"Warning: 'observation' key not found in step")
-            return
-        
-        if "observation" not in step:
-            print(f"Warning: 'observation' key not found in step")
-            return
-        
-        if "observation" not in step:
-            print(f"Warning: 'observation' key not found in step")
-            return

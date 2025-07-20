@@ -88,10 +88,8 @@ class DatasetSchema(ABC):
                 pass
             
             # Try to find the class in any of the schema modules
-            # 在 get_schema_for_dataset 方法中的 import 部分添加：
             from coscene_converter.common.dataset_schemas import default, berkeley_autolab_ur5, berkeley_gnm_cory_hall, stanford_robocook_converted_externally_to_rlds
             
-            # 在检查每个模块的循环中添加：
             for module in [default, berkeley_autolab_ur5, berkeley_gnm_cory_hall, stanford_robocook_converted_externally_to_rlds]:
                 if hasattr(module, class_name):
                     schema_class = getattr(module, class_name)
@@ -115,5 +113,4 @@ class DatasetSchema(ABC):
             step: Step data dictionary
             step_index: Index of the step
         """
-        # 默认实现，子类可以覆盖
         pass

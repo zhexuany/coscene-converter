@@ -95,9 +95,8 @@ class StanfordRobocookConvertedExternallyToRldsSchema(DatasetSchema):
     
     def process_step(self, step: Dict[str, Any], channels: Dict[str, Channel], verbose: bool = False) -> None:
         """Process a single step of data for Stanford RoboCook dataset"""
-        # Print step information if verbose mode is enabled
         if verbose:
-            self.print_step_info(step, 0)  # Step index not available here, using 0
+            self.print_step_info(step, 0) 
         
         # Process language instruction
         if "language_instruction" in step and "language_instruction" in channels:
