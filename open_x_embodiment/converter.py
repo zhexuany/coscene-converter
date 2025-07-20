@@ -2,7 +2,7 @@ import foxglove
 import time
 import os
 
-from coscene_converter.common.schemas import DatasetSchema
+from common.schemas import DatasetSchema
 
 
 def convert_episode(episode, output_file, dataset_name=None, control_rate_hz=5, live_preview=False, verbose=False):
@@ -65,7 +65,7 @@ def batch_convert_episodes(dataset_name, start_episode, end_episode, output_dir=
         end_episode: Ending episode number (inclusive)
         output_dir: Directory to save MCAP files
     """
-    from coscene_converter.open_x_embodiment.data_loader import load_dataset
+    from open_x_embodiment.data_loader import load_dataset
     
     # Ensure output directory exists
     os.makedirs(output_dir, exist_ok=True)

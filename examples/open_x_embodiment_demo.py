@@ -1,5 +1,5 @@
-from coscene_converter.open_x_embodiment.data_loader import load_dataset
-from coscene_converter.open_x_embodiment.converter import convert_episode
+from open_x_embodiment.data_loader import load_dataset
+from open_x_embodiment.converter import convert_episode
 
 # Load a dataset
 dataset_name = "berkeley_autolab_ur5"

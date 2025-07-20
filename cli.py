@@ -2,8 +2,8 @@
 
 import argparse
 import os
-from coscene_converter.open_x_embodiment.data_loader import load_dataset
-from coscene_converter.open_x_embodiment.converter import convert_episode, batch_convert_episodes
+from open_x_embodiment.data_loader import load_dataset
+from open_x_embodiment.converter import convert_episode, batch_convert_episodes
 
 def main():
     parser = argparse.ArgumentParser(

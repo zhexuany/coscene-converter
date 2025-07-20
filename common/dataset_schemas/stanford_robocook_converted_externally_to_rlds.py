@@ -5,7 +5,7 @@ from foxglove import Channel
 from foxglove.schemas import RawImage, FrameTransform, Vector3, Quaternion
 from foxglove.channels import RawImageChannel, FrameTransformChannel
 
-from coscene_converter.common.schemas import DatasetSchema, language_instruction_schema, float_schema, joint_state_schema
+from common.schemas import DatasetSchema, language_instruction_schema, float_schema, joint_state_schema
 
 
 class StanfordRobocookConvertedExternallyToRldsSchema(DatasetSchema):
@@ -29,7 +29,11 @@ class StanfordRobocookConvertedExternallyToRldsSchema(DatasetSchema):
         depth_2_chan = RawImageChannel(topic="/depth_2")
         depth_3_chan = RawImageChannel(topic="/depth_3")
         depth_4_chan = RawImageChannel(topic="/depth_4")
-        
+
+        gripper_chan = Channel(
+            topic="/gripper_state",
+            schema=float_schema
+        ) 
         # Robot state channels
         joint_state_chan = Channel(
             topic="/joint_state",
@@ -46,6 +50,7 @@ class StanfordRobocookConvertedExternallyToRldsSchema(DatasetSchema):
             "depth_2": depth_2_chan,
             "depth_3": depth_3_chan,
             "depth_4": depth_4_chan,
+            "gripper": gripper_chan,
             "joint_state": joint_state_chan
         }
     
@@ -146,9 +151,13 @@ class StanfordRobocookConvertedExternallyToRldsSchema(DatasetSchema):
                         print(f"Error processing {depth_key}: {e}")
             
             # Process robot state
-            if "state" in obs and "joint_state" in channels:
+            if "state" in obs and "gripper" in channels and "joint_state" in channels:
                 try:
                     state_tensor = obs["state"].numpy()
+                    # Publish gripper state
+                    gripper_msg = {"value": float(state_tensor[6])}
+                    channels["gripper"].log(gripper_msg)
+
                     # Ensure we have enough elements (6 DOF robot + 1 gripper)
                     if len(state_tensor) >= 7: 
                         # Publish joint state

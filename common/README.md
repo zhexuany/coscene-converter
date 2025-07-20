@@ -36,7 +36,7 @@ Contains implementations of dataset-specific schemas:
 ### Getting a Schema for a Dataset
 
 ```python
-from coscene_converter.common.schemas import DatasetSchema
+from common.schemas import DatasetSchema
 
 # Get schema for a specific dataset
 schema = DatasetSchema.get_schema_for_dataset("berkeley_gnm_cory_hall")
@@ -61,7 +61,7 @@ Example:
 ```python
 from typing import Dict, Any
 from foxglove import Channel
-from coscene_converter.common.schemas import DatasetSchema
+from common.schemas import DatasetSchema
 
 class NewDatasetSchema(DatasetSchema):
     def setup_channels(self) -> Dict[str, Channel]:

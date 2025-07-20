@@ -15,7 +15,7 @@ setup(
     packages=find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
-        "License :: OSI Approved :: MIT License",
+        "License :: OSI Approved :: Apache 2 License",
         "Operating System :: OS Independent",
     ],
     python_requires=">=3.6",
@@ -28,7 +28,7 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'coscene-converter=coscene_converter.cli:main',
+            'coscene-converter=cli:main',
         ],
     },
 )

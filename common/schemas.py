@@ -17,20 +17,23 @@ language_instruction_schema = {
 float_schema = {
     "type": "object",
     "properties": {
-        "value": {"type": "float"}
-    }
+        "value": {
+            "type": "number",
+            "format": "float",
+        },
+    },
 }
 
 joint_state_schema = {
     "type": "object",
     "properties": {
-        "joint0": {"type": "float"},
-        "joint1": {"type": "float"},
-        "joint2": {"type": "float"},
-        "joint3": {"type": "float"},
-        "joint4": {"type": "float"},
-        "joint5": {"type": "float"}
-    }
+        "joint0": {"type": "number", "format": "float"},
+        "joint1": {"type": "number", "format": "float"},
+        "joint2": {"type": "number", "format": "float"},
+        "joint3": {"type": "number", "format": "float"},
+        "joint4": {"type": "number", "format": "float"},
+        "joint5": {"type": "number", "format": "float"},
+    },
 }
 
 
@@ -70,14 +73,14 @@ class DatasetSchema(ABC):
             DatasetSchema instance for the dataset
         """
         # Convert dataset name to schema class name
-        # e.g., berkeley_gnm_cory_hall -> BerkeleyGnmCoryHallSchema
         parts = dataset_name.split('_')
         class_name = ''.join(part.capitalize() for part in parts) + 'Schema'
         
+        print(f"Searching for schema class {class_name}")
         # Try to import the schema class
         try:
             # First try to find a specific schema module
-            module_name = f"coscene_converter.common.dataset_schemas.{dataset_name}"
+            module_name = f"common.dataset_schemas.{dataset_name}"
             try:
                 module = importlib.import_module(module_name)
                 if hasattr(module, class_name):
@@ -88,22 +91,21 @@ class DatasetSchema(ABC):
                 pass
             
             # Try to find the class in any of the schema modules
-            from coscene_converter.common.dataset_schemas import default, berkeley_autolab_ur5, berkeley_gnm_cory_hall, stanford_robocook_converted_externally_to_rlds
+            from common.dataset_schemas import default, berkeley_autolab_ur5, stanford_robocook_converted_externally_to_rlds
             
-            for module in [default, berkeley_autolab_ur5, berkeley_gnm_cory_hall, stanford_robocook_converted_externally_to_rlds]:
+            for module in [default, berkeley_autolab_ur5, stanford_robocook_converted_externally_to_rlds]:
                 if hasattr(module, class_name):
                     schema_class = getattr(module, class_name)
                     return schema_class()
             
             # If not found, use default schema
             print(f"No specific schema found for {dataset_name}, using DefaultSchema")
-            from coscene_converter.common.dataset_schemas.default import DefaultSchema
+            from common.dataset_schemas.default import DefaultSchema
             return DefaultSchema()
             
         except Exception as e:
             print(f"Error loading schema for {dataset_name}: {e}")
-            print("Using DefaultSchema as fallback")
-            from coscene_converter.common.dataset_schemas.default import DefaultSchema
+            from common.dataset_schemas.default import DefaultSchema
             return DefaultSchema()
     
     def print_step_info(self, step: Dict[str, Any], step_index: int) -> None:

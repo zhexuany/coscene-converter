@@ -1,18 +1,19 @@
-"""Default dataset schema implementation"""
+"""Berkeley Autolab UR5 dataset schema implementation"""
 
 from typing import Dict, Any
 from foxglove import Channel
 from foxglove.schemas import RawImage, FrameTransform, Vector3, Quaternion
 from foxglove.channels import RawImageChannel, FrameTransformChannel
 
-from coscene_converter.common.schemas import DatasetSchema, language_instruction_schema, float_schema, joint_state_schema
+from common.schemas import DatasetSchema, language_instruction_schema, float_schema, joint_state_schema
+from common.dataset_schemas.default import DefaultSchema
 
 
-class DefaultSchema(DatasetSchema):
-    """Default dataset schema for standard Open-X-Embodiment datasets"""
+class BerkeleyAutolabUr5Schema(DefaultSchema):
+    """Berkeley Autolab UR5 dataset schema"""
     
     def setup_channels(self) -> Dict[str, Channel]:
-        """Set up default channels"""
+        """Set up channels for Berkeley Autolab UR5 dataset"""
         language_instruction_chan = Channel(
             topic="/natural_language_instruction", schema=language_instruction_schema
         )
@@ -39,6 +40,11 @@ class DefaultSchema(DatasetSchema):
             "joint_state": joint_state_chan
         }
     
+    def process_step(self, step: Dict[str, Any], channels: Dict[str, Channel], verbose: bool = False) -> None:
+        """Process step data for Berkeley Autolab UR5 dataset"""
+        # Use default processing logic
+        super().process_step(step, channels, verbose)
+    
     def print_step_info(self, step: Dict[str, Any], step_index: int) -> None:
         """Print information about a step."""
         print(f"Step {step_index}:")
@@ -60,19 +66,14 @@ class DefaultSchema(DatasetSchema):
             if "rotation_delta" in action:
                 print(f"  Action rotation delta: {action['rotation_delta']}")
             if "world_vector" in action:
-                print(f"  Action world vector: {action['world_vector']}")
-    
+                print(f"  Action world vector: {action['world_vector']}")    
+
     def process_step(self, step: Dict[str, Any], channels: Dict[str, Channel], verbose: bool = False) -> None:
         """Process data for a single step"""
         # Print step information if verbose mode is enabled
         if verbose:
-            self.print_step_info(step, 0)  # Step index not available here, using 0
+            self.print_step_info(step, self.step_idx)
             
-        # Check if observation exists in step
-        if "observation" not in step:
-            print(f"Warning: 'observation' key not found in step")
-            return
-        
         obs = step["observation"]
         
         # Process natural language instruction
@@ -86,7 +87,7 @@ class DefaultSchema(DatasetSchema):
                 instruction_msg = {"text": instruction_str}
                 channels["language_instruction"].log(instruction_msg)
             except Exception as e:
-                print(f"Error processing natural language instruction: {e}")
+                print(f"Error processing natural language instruction in step {self.step_idx}: {e}")
         
         # Process images
         for img_key in ["image", "hand_image", "image_with_depth"]:
@@ -115,7 +116,7 @@ class DefaultSchema(DatasetSchema):
                     # Publish image
                     channels[img_key].log(img_msg)
                 except Exception as e:
-                    print(f"Error processing image {img_key}: {e}")
+                    print(f"Error processing image {img_key} in step {self.step_idx}: {e}")
         
         # Process robot state
         if "robot_state" in obs and "transform" in channels and "gripper" in channels and "joint_state" in channels:
@@ -157,4 +158,7 @@ class DefaultSchema(DatasetSchema):
                     }
                     channels["joint_state"].log(joint_state_msg)
             except Exception as e:
-                print(f"Error processing robot state: {e}")
+                print(f"Error processing robot state in step {self.step_idx}: {e}")
+        
+        # Call parent's process_step to increment step index
+        super().process_step(step, channels, False)  # Pass False to avoid duplicate verbose printing
