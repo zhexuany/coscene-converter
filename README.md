@@ -31,8 +31,15 @@ python -m cli --dataset berkeley_autolab_ur5 --episode 1
 ```
 
 Options:
-- `--dataset`: Dataset name (e.g., berkeley_autolab_ur5, stanford_robocook_converted_externally_to_rlds)
-- `--episode`: Episode number to convert
+- `--dataset DATASET`: Dataset name to convert (e.g., berkeley_autolab_ur5, stanford_robocook_converted_externally_to_rlds)
+- `--episode EPISODE`: Episode number to convert (default: 1)
+- `--batch`: Process multiple episodes in batch mode
+- `--start START`: Start episode number for batch mode (default: 1)
+- `--end END`: End episode number for batch mode (default: 10)
+- `--output-dir OUTPUT_DIR`: Output directory for generated MCAP files (default: mcap_files)
+- `--live`: Show live preview during conversion
+- `--rate RATE`: Playback rate in Hz for live preview (default: 5.0)
+- `--verbose`: Enable verbose output with step information
 
 ### Exploring Dataset Structure
 
