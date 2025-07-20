@@ -6,12 +6,12 @@ with open("README.md", "r", encoding="utf-8") as fh:
 setup(
     name="coscene-converter",
     version="0.1.0",
-    author="Your Name",
-    author_email="your.email@example.com",
-    description="Conversion tools for robotics datasets to MCAP format using CoScene",
+    author="Zhexuan Yang",
+    author_email="zhexuany@gmail.com",
+    description="Conversion tools for robotics datasets to MCAP format",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/yourusername/coscene-tutorials",
+    url="https://github.com/zhexuany/coscene-tutorials",
     packages=find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
@@ -22,8 +22,13 @@ setup(
     install_requires=[
         "tensorflow",
         "tensorflow-datasets",
-        "foxglove",
+        "foxglove-sdk",
         "numpy",
         "gcsfs",
     ],
+    entry_points={
+        'console_scripts': [
+            'coscene-converter=coscene_converter.cli:main',
+        ],
+    },
 )

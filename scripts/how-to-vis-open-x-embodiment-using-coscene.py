@@ -15,12 +15,12 @@ import time
 import os
 
 DATASET = "berkeley_autolab_ur5"
-# 将遍历从1到341的所有轨迹
-START_EPISODE = 342
-END_EPISODE = 400
+# Will iterate through all trajectories from 1 to 341
+START_EPISODE = 401
+END_EPISODE = 401
 CONTROL_RATE_HZ = 5  # Depends on the dataset!
 
-# 创建mcap_files文件夹（如果不存在）
+# Create mcap_files folder (if it doesn't exist)
 MCAP_DIR = "mcap_files"
 os.makedirs(MCAP_DIR, exist_ok=True)
 
@@ -77,10 +77,10 @@ joint_state_schema = {
     },
 }
 
-# 启动服务器
+# Start the server
 server = foxglove.start_server()
 
-# 创建通道
+# Create channels
 language_instruction_chan = Channel(
     topic="/natural_language_instruction", schema=(language_instruction_schema)
 )
@@ -98,15 +98,15 @@ joint_state_chan = Channel(
 )
 
 try:
-    # 遍历从START_EPISODE到END_EPISODE的所有轨迹
+    # Iterate through all trajectories from START_EPISODE to END_EPISODE
     for episode_num in range(START_EPISODE, END_EPISODE + 1):
         print(f"Processing episode {episode_num}")
         
-        # 为每个轨迹创建MCAP文件，保存到mcap_files文件夹中
+        # Create MCAP file for each trajectory, save to mcap_files folder
         filename = os.path.join(MCAP_DIR, f"{DATASET}_episode_{episode_num}.mcap")
         writer = foxglove.open_mcap(filename)
         
-        # 加载数据集
+        # Load the dataset
         b = tfds.builder_from_directory(builder_dir=dataset2path(DATASET))
         ds = b.as_dataset(split=f"train[{episode_num}:{episode_num + 1}]")
         
@@ -117,7 +117,7 @@ try:
             assert "steps" in episode, "The dataset does not contain 'steps' key."
             print(f"Number of steps in the episode: {len(episode['steps'])}")
             
-            # 处理轨迹中的每一步
+            # Process each step in the trajectory
             for i, step in enumerate(episode["steps"]):
                 print_step_info(step)
 
@@ -196,7 +196,7 @@ try:
 
                 time.sleep(1 / CONTROL_RATE_HZ)
                 
-            # 完成当前轨迹处理后关闭MCAP文件
+            # Close the MCAP file after processing the current trajectory
             writer.close()
             print(f"MCAP file for episode {episode_num} saved to {filename}")
             

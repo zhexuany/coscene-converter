@@ -1,4 +1,4 @@
-"""Berkeley Autolab UR5 数据集模式实现"""
+"""Berkeley Autolab UR5 dataset schema implementation"""
 
 from typing import Dict, Any
 from foxglove import Channel
@@ -10,14 +10,14 @@ from coscene_converter.common.dataset_schemas.default import DefaultSchema
 
 
 class BerkeleyAutolabUR5Schema(DefaultSchema):
-    """Berkeley Autolab UR5 数据集模式"""
+    """Berkeley Autolab UR5 dataset schema"""
     
     def setup_channels(self) -> Dict[str, Channel]:
-        """设置 Berkeley Autolab UR5 数据集的通道"""
-        # 使用默认通道设置
+        """Set up channels for Berkeley Autolab UR5 dataset"""
+        # Use default channel setup
         return super().setup_channels()
     
     def process_step(self, step: Dict[str, Any], channels: Dict[str, Channel]) -> None:
-        """处理 Berkeley Autolab UR5 数据集的步骤数据"""
-        # 使用默认处理逻辑
+        """Process step data for Berkeley Autolab UR5 dataset"""
+        # Use default processing logic
         super().process_step(step, channels)

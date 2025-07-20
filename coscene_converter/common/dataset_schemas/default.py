@@ -1,4 +1,4 @@
-"""默认数据集模式实现"""
+"""Default dataset schema implementation"""
 
 from typing import Dict, Any
 from foxglove import Channel
@@ -9,10 +9,10 @@ from coscene_converter.common.schemas import DatasetSchema, language_instruction
 
 
 class DefaultSchema(DatasetSchema):
-    """默认数据集模式，适用于标准的Open-X-Embodiment数据集"""
+    """Default dataset schema for standard Open-X-Embodiment datasets"""
     
     def setup_channels(self) -> Dict[str, Channel]:
-        """设置默认通道"""
+        """Set up default channels"""
         language_instruction_chan = Channel(
             topic="/natural_language_instruction", schema=language_instruction_schema
         )
@@ -39,15 +39,30 @@ class DefaultSchema(DatasetSchema):
             "joint_state": joint_state_chan
         }
     
-    def process_step(self, step: Dict[str, Any], channels: Dict[str, Channel]) -> None:
-        """处理单个步骤的数据"""
-        if "observation" not in step:
-            print(f"警告：步骤中没有 'observation' 键")
-            return
+    def print_step_info(self, step: Dict[str, Any], step_index: int) -> None:
+        """Print information about a step."""
+        print(f"Step {step_index}:")
+        if "observation" in step:
+            obs = step["observation"]
+            if "image" in obs:
+                print(f"  image shape: {obs['image'].shape}")
+            if "hand_image" in obs:
+                print(f"  hand_image shape: {obs['hand_image'].shape}")
+            if "image_with_depth" in obs:
+                print(f"  image_with_depth shape: {obs['image_with_depth'].shape}")
+            if "natural_language_instruction" in obs:
+                print(f"  natural language instruction: {obs['natural_language_instruction']}")
+            if "robot_state" in obs:
+                print(f"  Robot state: {obs['robot_state']}")
         
-        obs = step["observation"]
+        if "action" in step:
+            action = step["action"]
+            if "rotation_delta" in action:
+                print(f"  Action rotation delta: {action['rotation_delta']}")
+            if "world_vector" in action:
+                print(f"  Action world vector: {action['world_vector']}")
         
-        # 处理自然语言指令
+        # Process natural language instruction
         if "natural_language_instruction" in obs and "language_instruction" in channels:
             try:
                 instruction_str = (
@@ -58,24 +73,24 @@ class DefaultSchema(DatasetSchema):
                 instruction_msg = {"text": instruction_str}
                 channels["language_instruction"].log(instruction_msg)
             except Exception as e:
-                print(f"处理自然语言指令时出错: {e}")
+                print(f"Error processing natural language instruction: {e}")
         
-        # 处理图像
+        # Process images
         for img_key in ["image", "hand_image", "image_with_depth"]:
             if img_key in obs and img_key in channels:
                 try:
                     img_tensor = obs[img_key]
                     
-                    # 确定编码和每像素字节数
-                    encoding = "rgb8"  # 默认编码
-                    bytes_per_pixel = 3  # 默认每像素字节数
+                    # Determine encoding and bytes per pixel
+                    encoding = "rgb8"  # Default encoding
+                    bytes_per_pixel = 3  # Default bytes per pixel
                     
-                    # 根据图像类型调整编码
+                    # Adjust encoding based on image type
                     if img_key == "image_with_depth":
                         encoding = "32FC1"
                         bytes_per_pixel = 4
                     
-                    # 创建图像消息
+                    # Create image message
                     img_msg = RawImage(
                         data=img_tensor.numpy().tobytes(),
                         width=img_tensor.shape[1],
@@ -84,19 +99,19 @@ class DefaultSchema(DatasetSchema):
                         encoding=encoding,
                     )
                     
-                    # 发布图像
+                    # Publish image
                     channels[img_key].log(img_msg)
                 except Exception as e:
-                    print(f"处理图像 {img_key} 时出错: {e}")
+                    print(f"Error processing image {img_key}: {e}")
         
-        # 处理机器人状态
+        # Process robot state
         if "robot_state" in obs and "transform" in channels and "gripper" in channels and "joint_state" in channels:
             try:
                 robot_state = obs["robot_state"].numpy()
                 
-                # 确保机器人状态有足够的元素
+                # Ensure robot state has enough elements
                 if len(robot_state) >= 14:
-                    # 发布末端执行器变换
+                    # Publish end effector transform
                     transform_msg = FrameTransform(
                         parent_frame_id="robot_base",
                         child_frame_id="end_effector",
@@ -114,11 +129,11 @@ class DefaultSchema(DatasetSchema):
                     )
                     channels["transform"].log(transform_msg)
                     
-                    # 发布夹持器状态
+                    # Publish gripper state
                     gripper_msg = {"value": float(robot_state[13])}
                     channels["gripper"].log(gripper_msg)
                     
-                    # 发布关节状态
+                    # Publish joint state
                     joint_state_msg = {
                         "joint0": float(robot_state[0]),
                         "joint1": float(robot_state[1]),
@@ -129,4 +144,21 @@ class DefaultSchema(DatasetSchema):
                     }
                     channels["joint_state"].log(joint_state_msg)
             except Exception as e:
-                print(f"处理机器人状态时出错: {e}")
+                print(f"Error processing robot state: {e}")
+    
+    def process_step(self, step: Dict[str, Any], channels: Dict[str, Channel], verbose: bool = False) -> None:
+        """Process data for a single step"""
+        if verbose:
+            self.print_step_info(step, 0)  # 步骤索引在这里不可用，使用0
+            
+        if "observation" not in step:
+            print(f"Warning: 'observation' key not found in step")
+            return
+        
+        if "observation" not in step:
+            print(f"Warning: 'observation' key not found in step")
+            return
+        
+        if "observation" not in step:
+            print(f"Warning: 'observation' key not found in step")
+            return

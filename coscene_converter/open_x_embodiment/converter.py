@@ -1,15 +1,11 @@
 import foxglove
 import time
 import os
-from foxglove.schemas import RawImage, FrameTransform, Vector3, Quaternion
-from foxglove.channels import RawImageChannel, FrameTransformChannel
-from foxglove import Channel
 
 from coscene_converter.common.schemas import DatasetSchema
-from coscene_converter.open_x_embodiment.data_loader import print_step_info
 
 
-def convert_episode(episode, output_file, dataset_name=None, control_rate_hz=5, live_preview=False):
+def convert_episode(episode, output_file, dataset_name=None, control_rate_hz=5, live_preview=False, verbose=False):
     """Convert an episode to MCAP format and save to file.
     
     Args:
@@ -22,13 +18,13 @@ def convert_episode(episode, output_file, dataset_name=None, control_rate_hz=5, 
     # Ensure output directory exists
     os.makedirs(os.path.dirname(os.path.abspath(output_file)), exist_ok=True)
     
-    # 如果没有提供数据集名称，尝试从输出文件名中提取
+    # If dataset name is not provided, try to extract from output filename
     if dataset_name is None:
         dataset_name = os.path.basename(output_file).split('_episode_')[0]
     
-    # 获取数据集模式
+    # Get dataset schema
     schema = DatasetSchema.get_schema_for_dataset(dataset_name)
-    print(f"使用数据集 {dataset_name} 的模式: {schema.__class__.__name__}")
+    print(f"Using schema for dataset {dataset_name}: {schema.__class__.__name__}")
     
     # Create writer or server
     writer = None
@@ -44,16 +40,13 @@ def convert_episode(episode, output_file, dataset_name=None, control_rate_hz=5, 
     
     try:
         for i, step in enumerate(episode["steps"]):
-            print_step_info(step, i)
-            
-            # 使用模式处理步骤
-            schema.process_step(step, channels)
+            schema.process_step(step, channels, verbose)
             
             if live_preview:
                 time.sleep(1 / control_rate_hz)
     
     except Exception as e:
-        print(f"Error during visualization: {e}")
+        print(f"Error during convertion: {e}")
     finally:
         if server:
             server.stop()
@@ -63,7 +56,7 @@ def convert_episode(episode, output_file, dataset_name=None, control_rate_hz=5, 
             print(f"MCAP file saved to {output_file}")
 
 
-def batch_convert_episodes(dataset_name, start_episode, end_episode, output_dir="mcap_files"):
+def batch_convert_episodes(dataset_name, start_episode, end_episode, output_dir="mcap_files", verbose=False):
     """Convert multiple episodes in batch mode.
     
     Args:
@@ -93,8 +86,7 @@ def batch_convert_episodes(dataset_name, start_episode, end_episode, output_dir=
             # Create output filename
             filename = os.path.join(output_dir, f"{dataset_name}_episode_{episode_num}.mcap")
             
-            # 转换并保存，传入数据集名称
-            convert_episode(episode, filename, dataset_name=dataset_name)
+            convert_episode(episode, filename, dataset_name=dataset_name, verbose=verbose)
             
         except StopIteration:
             print(f"Episode {episode_num} not found in dataset.")

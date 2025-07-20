@@ -6,26 +6,76 @@ from coscene_converter.open_x_embodiment.data_loader import load_dataset
 from coscene_converter.open_x_embodiment.converter import convert_episode, batch_convert_episodes
 
 def main():
-    parser = argparse.ArgumentParser(description="Convert Open-X-Embodiment datasets to MCAP format")
-    parser.add_argument("--dataset", default="berkeley_autolab_ur5", help="Dataset name")
-    parser.add_argument("--episode", type=int, default=1, help="Episode number")
-    parser.add_argument("--batch", action="store_true", help="Process multiple episodes")
-    parser.add_argument("--start", type=int, default=1, help="Start episode (for batch mode)")
-    parser.add_argument("--end", type=int, default=10, help="End episode (for batch mode)")
-    parser.add_argument("--output-dir", default="mcap_files", help="Output directory")
-    parser.add_argument("--live", action="store_true", help="Show live preview")
-    parser.add_argument("--rate", type=float, default=5.0, help="Playback rate in Hz")
+    parser = argparse.ArgumentParser(
+        description="Convert Open-X-Embodiment datasets to MCAP format for visualization in coScene",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
+    parser.add_argument(
+        "--dataset", 
+        default="berkeley_autolab_ur5", 
+        help="Dataset name to convert (e.g., berkeley_autolab_ur5, stanford_robocook_converted_externally_to_rlds)"
+    )
+    parser.add_argument(
+        "--episode", 
+        type=int, 
+        default=1, 
+        help="Episode number to convert"
+    )
+    parser.add_argument(
+        "--batch", 
+        action="store_true", 
+        help="Process multiple episodes in batch mode"
+    )
+    parser.add_argument(
+        "--start", 
+        type=int, 
+        default=1, 
+        help="Start episode number (for batch mode)"
+    )
+    parser.add_argument(
+        "--end", 
+        type=int, 
+        default=10, 
+        help="End episode number (for batch mode)"
+    )
+    parser.add_argument(
+        "--output-dir", 
+        default="mcap_files", 
+        help="Output directory for generated MCAP files"
+    )
+    parser.add_argument(
+        "--live", 
+        action="store_true", 
+        help="Show live preview during conversion"
+    )
+    parser.add_argument(
+        "--rate", 
+        type=float, 
+        default=5.0, 
+        help="Playback rate in Hz for live preview"
+    )
+    parser.add_argument(
+        "--verbose", 
+        action="store_true", 
+        help="Enable verbose output with step information"
+    )
     
     args = parser.parse_args()
     
+    # Create output directory if it doesn't exist
+    os.makedirs(args.output_dir, exist_ok=True)
+    
     if args.batch:
+        print(f"Batch converting episodes {args.start} to {args.end} from dataset '{args.dataset}'")
         batch_convert_episodes(
             args.dataset, 
             args.start, 
             args.end, 
             args.output_dir
         )
+        print(f"Batch conversion complete. Output files saved to {args.output_dir}/")
     else:
+        print(f"Converting episode {args.episode} from dataset '{args.dataset}'")
         # Load dataset
         _, episode = load_dataset(args.dataset, args.episode)
         
@@ -40,9 +90,14 @@ def main():
             convert_episode(
                 episode, 
                 filename, 
+                args.dataset,  
                 args.rate, 
-                args.live
+                args.live,
+                verbose=args.verbose
             )
+            print(f"Conversion complete. Output saved to {filename}")
+        else:
+            print(f"Error: Could not load episode {args.episode} from dataset '{args.dataset}'")
 
 if __name__ == "__main__":
     main()

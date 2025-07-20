@@ -14,7 +14,7 @@ def dataset2path(dataset_name):
     return f"gs://gresearch/robotics/{dataset_name}/{version}"
 
 def explore_tensor_structure(tensor, prefix="", max_depth=5, current_depth=0):
-    """递归探索张量的结构"""
+    """Recursively explore the structure of a tensor"""
     if current_depth >= max_depth:
         return {"max_depth_reached": True}
     
@@ -39,103 +39,103 @@ def explore_tensor_structure(tensor, prefix="", max_depth=5, current_depth=0):
         return {"type": f"{type(tensor).__name__}"}
 
 def main():
-    parser = argparse.ArgumentParser(description="探索Open-X-Embodiment数据集的结构")
-    parser.add_argument("--dataset", type=str, default="berkeley_autolab_ur5", help="数据集名称")
-    parser.add_argument("--episode", type=int, default=1, help="要加载的episode编号")
+    parser = argparse.ArgumentParser(description="Explore the structure of Open-X-Embodiment datasets")
+    parser.add_argument("--dataset", type=str, default="berkeley_autolab_ur5", help="Dataset name")
+    parser.add_argument("--episode", type=int, default=1, help="Episode number to load")
     args = parser.parse_args()
     
-    print(f"正在加载数据集: {args.dataset}, episode: {args.episode}")
+    print(f"Loading dataset: {args.dataset}, episode: {args.episode}")
     
-    # 创建一个结果JSON结构体
+    # Create a result JSON structure
     result_json = {
         "dataset_name": args.dataset,
         "episode_number": args.episode,
         "episode_structure": {}
     }
     
-    # 加载数据集
+    # Load the dataset
     try:
         b = tfds.builder_from_directory(builder_dir=dataset2path(args.dataset))
         ds = b.as_dataset(split=f"train[{args.episode}:{args.episode + 1}]")
         episode = next(iter(ds))
         
-        print(f"成功加载数据集: {args.dataset}")
+        print(f"Successfully loaded dataset: {args.dataset}")
         result_json["load_status"] = "success"
         
-        # 检查数据集结构
+        # Check dataset structure
         if "steps" in episode:
             steps_count = len(episode['steps'])
-            print(f"Episode中的步骤数: {steps_count}")
+            print(f"Number of steps in the episode: {steps_count}")
             result_json["steps_count"] = steps_count
             
-            # 探索整个episode的结构
-            print("\n===== Episode的顶级键 =====")
+            # Explore the structure of the entire episode
+            print("\n===== Top-level keys in the Episode =====")
             top_level_keys = list(episode.keys())
             for key in top_level_keys:
                 print(f"- {key}")
             result_json["top_level_keys"] = top_level_keys
             
-            # 探索steps的结构 - 修改这部分代码以处理不同类型的steps
-            print("\n===== Steps的结构 =====")
+            # Explore the structure of steps - modify this part to handle different types of steps
+            print("\n===== Structure of Steps =====")
             steps = episode["steps"]
             steps_type = str(type(steps))
-            print(f"Steps的类型: {steps_type}")
+            print(f"Type of Steps: {steps_type}")
             result_json["steps_type"] = steps_type
             
-            # 根据steps的类型采取不同的处理方式
+            # Handle different types of steps
             if isinstance(steps, (list, tuple)) and len(steps) > 0:
-                # 如果steps是列表或元组，直接访问第一个元素
-                print("\n===== 第一个Step的顶级键 =====")
+                # If steps is a list or tuple, directly access the first element
+                print("\n===== Top-level keys in the first Step =====")
                 step = steps[0]
                 step_keys = list(step.keys())
                 for key in step_keys:
                     print(f"- {key}")
                 result_json["first_step_keys"] = step_keys
                 
-                # 详细探索第一个step的结构
-                print("\n===== 第一个Step的详细结构 =====")
+                # Detailed exploration of the first step's structure
+                print("\n===== Detailed structure of the first Step =====")
                 structure = explore_tensor_structure(step)
                 print(json.dumps(structure, indent=2))
                 result_json["first_step_structure"] = structure
                 
             elif hasattr(steps, "take") and callable(getattr(steps, "take", None)):
-                # 如果steps是一个数据集对象，使用take方法获取第一个元素
-                print("\n===== Steps是一个数据集对象 =====")
+                # If steps is a dataset object, use the take method to get the first element
+                print("\n===== Steps is a dataset object =====")
                 result_json["steps_is_dataset"] = True
                 try:
                     first_step = next(iter(steps.take(1)))
-                    print("\n===== 第一个Step的顶级键 =====")
+                    print("\n===== Top-level keys in the first Step =====")
                     step_keys = list(first_step.keys())
                     for key in step_keys:
                         print(f"- {key}")
                     result_json["first_step_keys"] = step_keys
                     
-                    # 详细探索第一个step的结构
-                    print("\n===== 第一个Step的详细结构 =====")
+                    # Detailed exploration of the first step's structure
+                    print("\n===== Detailed structure of the first Step =====")
                     structure = explore_tensor_structure(first_step)
                     print(json.dumps(structure, indent=2))
                     result_json["first_step_structure"] = structure
                 except Exception as e:
                     error_msg = str(e)
-                    print(f"无法访问第一个step: {error_msg}")
+                    print(f"Cannot access the first step: {error_msg}")
                     result_json["first_step_error"] = error_msg
                     
-                    print("尝试打印steps的基本信息:")
+                    print("Trying to print basic information about steps:")
                     steps_info = {"type": str(type(steps))}
-                    print(f"  - 类型: {steps_info['type']}")
+                    print(f"  - Type: {steps_info['type']}")
                     
                     if hasattr(steps, "element_spec"):
                         element_spec = str(steps.element_spec)
-                        print(f"  - 元素规格: {element_spec}")
+                        print(f"  - Element specification: {element_spec}")
                         steps_info["element_spec"] = element_spec
                     
                     result_json["steps_info"] = steps_info
             else:
-                # 如果steps是其他类型，尝试打印其基本信息
-                print(f"Steps是一个不支持直接索引的类型: {type(steps)}")
+                # If steps is another type, try to print its basic information
+                print(f"Steps is a type that doesn't support direct indexing: {type(steps)}")
                 result_json["steps_indexable"] = False
                 
-                print("尝试打印steps的基本信息:")
+                print("Trying to print basic information about steps:")
                 steps_info = {}
                 if hasattr(steps, "__dict__"):
                     for attr_name in dir(steps):
@@ -149,41 +149,41 @@ def main():
                                 pass
                 result_json["steps_info"] = steps_info
             
-            # 保存完整的episode结构
+            # Save the complete episode structure
             result_json["episode_structure"] = explore_tensor_structure(episode)
             
-            # 保存结果到文件
+            # Save results to file
             output_file = f"{args.dataset}_structure.json"
             with open(output_file, "w") as f:
                 json.dump(result_json, f, indent=2)
-            print(f"\n结构已保存到文件: {output_file}")
+            print(f"\nStructure has been saved to file: {output_file}")
             
         else:
-            print("警告: 数据集中没有'steps'键")
-            result_json["warning"] = "数据集中没有'steps'键"
+            print("Warning: Dataset does not have a 'steps' key")
+            result_json["warning"] = "Dataset does not have a 'steps' key"
             
-            print("可用的顶级键:")
+            print("Available top-level keys:")
             top_level_keys = list(episode.keys())
             for key in top_level_keys:
                 print(f"- {key}")
             result_json["top_level_keys"] = top_level_keys
             
-            # 保存结果到文件
+            # Save results to file
             output_file = f"{args.dataset}_structure.json"
             with open(output_file, "w") as f:
                 json.dump(result_json, f, indent=2)
-            print(f"\n结构已保存到文件: {output_file}")
+            print(f"\nStructure has been saved to file: {output_file}")
     
     except Exception as e:
         error_msg = str(e)
-        print(f"错误: {error_msg}")
+        print(f"Error: {error_msg}")
         result_json["error"] = error_msg
         
-        # 即使出错也保存已收集的信息
+        # Save collected information even if an error occurs
         output_file = f"{args.dataset}_structure.json"
         with open(output_file, "w") as f:
             json.dump(result_json, f, indent=2)
-        print(f"\n部分结构已保存到文件: {output_file}")
+        print(f"\nPartial structure has been saved to file: {output_file}")
 
 if __name__ == "__main__":
     main()
