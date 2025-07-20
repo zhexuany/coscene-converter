@@ -57,3 +57,5 @@ mcap_files/
 # 可选：如果您有其他大型数据文件
 *.hdf5
 *.bag
+
+*.json

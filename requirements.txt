@@ -1,0 +1,5 @@
+tensorflow
+tensorflow-datasets
+foxglove
+numpy
+gcsfs
